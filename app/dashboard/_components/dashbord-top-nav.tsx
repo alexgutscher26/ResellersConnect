@@ -38,22 +38,6 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
                   </Button>
                 </Link>
               </DialogClose>
-              <DialogClose asChild>
-                <Link href="/dashboard/projects">
-                  <Button variant="outline" className="w-full">
-                    <Folder className="mr-2 h-4 w-4" />
-                    Projects
-                  </Button>
-                </Link>
-              </DialogClose>
-              <DialogClose asChild>
-                <Link href="/dashboard/finance">
-                  <Button variant="outline" className="w-full">
-                    <Banknote className="mr-2 h-4 w-4" />
-                    Finance
-                  </Button>
-                </Link>
-              </DialogClose>
               <Separator className="my-3" />
               <DialogClose asChild>
                 <Link href="/dashboard/settings">

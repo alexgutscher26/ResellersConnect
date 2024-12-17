@@ -4,9 +4,9 @@ Every time you choose to apply a rule(s), explicitly state the rule(s) in the ou
 
 ## Project Context
 Create a SaaS platform for resellers to simplify inventory management, automate crosslisting, and synchronize updates across multiple resale platforms such as eBay, Poshmark, Mercari, Facebook Marketplace, and Depop.
-- 
-- 
-- 
+
+## What are we building?
+- [ whatwearebuilding.md ](whatwearebuilding.md)
 
 ## Code Style and Structure
 - Write concise, technical TypeScript code with accurate examples
@@ -14,30 +14,77 @@ Create a SaaS platform for resellers to simplify inventory management, automate 
 - Prefer iteration and modularization over code duplication
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
 - Structure repository files as follows:
+
 ```
-server/
-├── src/
-    ├── components/     # Shared React components
-    ├── hooks/          # Custom React hooks
-    ├── utils/          # Helper functions
-    ├── types/          # TypeScript types
-    └── lib/            # Shared libraries
-extension/
-├── src/
-    ├── background/     # Service worker scripts
-    ├── content/        # Content scripts
-    ├── popup/          # Extension popup UI
-    ├── options/        # Extension options page
-    ├── components/     # Shared React components
-    ├── hooks/          # Custom React hooks
-    ├── utils/          # Helper functions
-    ├── lib/            # Shared libraries
-    ├── types/          # TypeScript types
-    └── storage/        # Chrome storage utilities
-shared/
-├── src/
-    ├── types/          # TypeScript types, only used for shared types between server and extension
-    └── utils/          # Helper functions, only used for shared functions between server and extension
+├── app/                        # Next.js App Router pages
+│   ├── (auth)/                # Authentication related routes
+│   ├── (dashboard)/           # Dashboard related routes
+│   ├── (marketing)/           # Marketing/landing pages
+│   ├── api/                   # API routes
+│   └── layout.tsx             # Root layout
+├── components/                # Shared React components
+│   ├── auth/                  # Authentication related components
+│   ├── dashboard/             # Dashboard specific components
+│   ├── forms/                 # Form components
+│   ├── layout/                # Layout components
+│   ├── listings/             # Listing related components
+│   ├── ui/                   # UI components (shadcn)
+│   └── shared/               # Shared components
+├── hooks/                    # Custom React hooks
+│   ├── use-auth.ts
+│   ├── use-listings.ts
+│   └── use-settings.ts
+├── lib/                      # Shared libraries
+│   ├── auth/                 # Authentication utilities
+│   ├── db/                   # Database utilities
+│   └── api/                  # API utilities
+├── types/                    # TypeScript types
+│   ├── auth.ts
+│   ├── listings.ts
+│   └── api.ts
+├── utils/                    # Helper functions
+│   ├── formatting.ts
+│   ├── validation.ts
+│   └── api-helpers.ts
+├── public/                   # Static files
+│   ├── images/
+│   └── fonts/
+├── styles/                   # Global styles
+│   └── globals.css
+├── config/                   # Configuration files
+│   ├── site.ts
+│   └── dashboard.ts
+├── prisma/                   # Database schema and migrations
+│   └── schema.prisma
+├── extension/               # Chrome Extension
+│   ├── src/
+│   │   ├── background/     # Service worker scripts
+│   │   ├── content/        # Content scripts
+│   │   ├── popup/         # Extension popup UI
+│   │   ├── options/       # Extension options page
+│   │   ├── components/    # Extension-specific components
+│   │   ├── hooks/         # Extension-specific hooks
+│   │   ├── utils/         # Extension utilities
+│   │   ├── lib/          # Extension libraries
+│   │   ├── types/        # Extension types
+│   │   └── storage/      # Chrome storage utilities
+│   ├── public/           # Extension static files
+│   └── manifest.json     # Extension manifest
+└── shared/               # Shared between web app and extension
+    ├── types/           # Shared TypeScript types
+    └── utils/           # Shared utilities
+
+# Configuration Files
+├── .env                # Environment variables
+├── .env.template       # Environment variables template
+├── .eslintrc.json     # ESLint configuration
+├── .gitignore         # Git ignore rules
+├── next.config.ts     # Next.js configuration
+├── package.json       # Project dependencies
+├── postcss.config.js  # PostCSS configuration
+├── tailwind.config.ts # Tailwind CSS configuration
+├── tsconfig.json      # TypeScript configuration
+└── README.md         # Project documentation
 ```
 
 ## Tech Stack
@@ -45,8 +92,11 @@ shared/
 - TypeScript
 - Tailwind CSS
 - Shadcn UI
-- Chrome Extension
 - Express.js
+- Next.js
+- Supabase
+- Stripe
+- Clerk
 
 ## Naming Conventions
 - Use lowercase with dashes for directories (e.g., components/form-wizard)
@@ -63,27 +113,8 @@ shared/
 - Avoid try/catch blocks unless there's good reason to translate or handle error in that abstraction
 - Use explicit return types for all functions
 
-## Chrome Extension Specific
-- Use Manifest V3 standards
-- Implement proper message passing between components:
-  ```typescript
-  interface MessagePayload {
-    type: string;
-    data: unknown;
-  }
-  ```
-- Handle permissions properly in manifest.json
-- Use chrome.storage.local for persistent data
-- Implement proper error boundaries and fallbacks
-- Use lib/storage for storage related logic
-- For the async injected scripts in content/, 
-  - they must not close over variables from the outer scope
-  - they must not use imported functions from the outer scope
-  - they must have wrapped error handling so the error message is returned to the caller
-
 ## State Management
 - Use React Context for global state when needed
-- Implement proper state persistence using chrome.storage (for extension)
 - Implement proper cleanup in useEffect hooks
 
 ## Syntax and Formatting
