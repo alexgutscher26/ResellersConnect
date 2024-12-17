@@ -9,6 +9,12 @@ interface MarketplaceCredentials {
 const NAVIGATION_TIMEOUT = 60000 // 60 seconds
 const WAIT_FOR_SELECTOR_TIMEOUT = 10000 // 10 seconds
 
+interface LoginResult {
+  success: boolean
+  message: string
+  cookies?: any[]
+}
+
 export async function loginToPoshmark(credentials: MarketplaceCredentials): Promise<LoginResult> {
   try {
     // Open Poshmark login page in default browser
@@ -47,12 +53,6 @@ async function findChromeExecutable(): Promise<string> {
   }) || '';
 }
 
-export interface LoginResult {
-  success: boolean;
-  message: string;
-  cookies?: any[];
-}
-
 export async function loginToMercari(credentials: MarketplaceCredentials): Promise<LoginResult> {
   try {
     // Open Mercari login page in default browser
@@ -78,6 +78,54 @@ export async function loginToDepop(credentials: MarketplaceCredentials): Promise
     await open('https://www.depop.com/login', { wait: false });
 
     // Return success but indicate manual verification needed
+    return {
+      success: true,
+      message: 'Please complete login in your default browser. Once logged in, you can continue using the app.',
+    };
+  } catch (error) {
+    console.error('Error opening browser:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to open browser'
+    };
+  }
+}
+
+export async function loginToEbay(credentials: MarketplaceCredentials): Promise<LoginResult> {
+  try {
+    await open('https://signin.ebay.com/signin/', { wait: false });
+    return {
+      success: true,
+      message: 'Please complete login in your default browser. Once logged in, you can continue using the app.',
+    };
+  } catch (error) {
+    console.error('Error opening browser:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to open browser'
+    };
+  }
+}
+
+export async function loginToFacebook(credentials: MarketplaceCredentials): Promise<LoginResult> {
+  try {
+    await open('https://www.facebook.com/login', { wait: false });
+    return {
+      success: true,
+      message: 'Please complete login in your default browser. Once logged in, you can continue using the app.',
+    };
+  } catch (error) {
+    console.error('Error opening browser:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to open browser'
+    };
+  }
+}
+
+export async function loginToBonanza(credentials: MarketplaceCredentials): Promise<LoginResult> {
+  try {
+    await open('https://www.bonanza.com/login', { wait: false });
     return {
       success: true,
       message: 'Please complete login in your default browser. Once logged in, you can continue using the app.',

@@ -17,15 +17,10 @@ export class MarketplaceAuthService {
     marketplace: string,
     credentials: MarketplaceCredentials
   ) {
-    console.log('Storing credentials for:', { userId, marketplace });
-    
     try {
       const encryptedUsername = encrypt(credentials.username);
       const encryptedPassword = encrypt(credentials.password);
-
-      console.log('Attempting to upsert credentials');
       
-      // Upsert the credentials (update if exists, create if not)
       const result = await prisma.marketplaceAuths.upsert({
         where: {
           userId_marketplace: {
@@ -49,7 +44,6 @@ export class MarketplaceAuthService {
         },
       });
 
-      console.log('Credentials stored successfully:', { id: result.id });
       return result;
     } catch (error) {
       console.error('Error storing credentials:', error);
@@ -61,8 +55,6 @@ export class MarketplaceAuthService {
     userId: string,
     marketplace: string
   ): Promise<StoredCredentials | null> {
-    console.log('Getting credentials for:', { userId, marketplace });
-    
     try {
       const stored = await prisma.marketplaceAuths.findUnique({
         where: {
@@ -72,8 +64,6 @@ export class MarketplaceAuthService {
           },
         },
       });
-
-      console.log('Retrieved credentials:', { found: !!stored });
 
       if (!stored) {
         return null;
@@ -91,15 +81,9 @@ export class MarketplaceAuthService {
     }
   }
 
-  static async updateConnectionStatus(
-    userId: string,
-    marketplace: string,
-    isConnected: boolean
-  ) {
-    console.log('Updating connection status:', { userId, marketplace, isConnected });
-    
+  static async removeCredentials(userId: string, marketplace: string) {
     try {
-      const result = await prisma.marketplaceAuths.update({
+      await prisma.marketplaceAuths.update({
         where: {
           userId_marketplace: {
             userId,
@@ -107,24 +91,21 @@ export class MarketplaceAuthService {
           },
         },
         data: {
-          isConnected,
+          isConnected: false,
           lastVerified: new Date(),
         },
       });
 
-      console.log('Connection status updated successfully:', { id: result.id });
-      return result;
+      return true;
     } catch (error) {
-      console.error('Error updating connection status:', error);
+      console.error('Error removing credentials:', error);
       throw error;
     }
   }
 
-  static async removeCredentials(userId: string, marketplace: string) {
-    console.log('Removing credentials for:', { userId, marketplace });
-    
+  static async isConnected(userId: string, marketplace: string): Promise<boolean> {
     try {
-      const result = await prisma.marketplaceAuths.delete({
+      const stored = await prisma.marketplaceAuths.findUnique({
         where: {
           userId_marketplace: {
             userId,
@@ -133,11 +114,10 @@ export class MarketplaceAuthService {
         },
       });
 
-      console.log('Credentials removed successfully:', { id: result.id });
-      return result;
+      return stored?.isConnected ?? false;
     } catch (error) {
-      console.error('Error removing credentials:', error);
-      throw error;
+      console.error('Error checking connection status:', error);
+      return false;
     }
   }
 }

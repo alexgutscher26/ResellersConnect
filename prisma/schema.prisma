@@ -72,30 +72,16 @@ model invoices {
   user_id         String?
 }
 
-model marketplaceAuths {
-  id                Int      @id @default(autoincrement())
-  created_time      DateTime @default(now())
-  userId           String
-  marketplace      String
-  encryptedUsername String
-  encryptedPassword String
-  isConnected      Boolean  @default(false)
-  lastVerified     DateTime @default(now())
-  lastError        String?
-
-  @@unique([userId, marketplace], name: "userId_marketplace")
-}
-
 model MarketplaceAuths {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId           String
-  marketplace      String
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String
+  marketplace       String
   encryptedUsername String
   encryptedPassword String
-  isConnected      Boolean   @default(false)
-  lastVerified     DateTime  @default(now())
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  isConnected       Boolean  @default(false)
+  lastVerified      DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@unique([userId, marketplace])
   @@index([userId])

@@ -1,31 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuth } from '@clerk/nextjs/server'
 import { MarketplaceAuthService } from '@/lib/services/marketplace-auth'
+import { defaultMarketplaces } from '@/config/marketplaces'
 
 export async function GET(req: NextRequest) {
   try {
     const { userId } = getAuth(req)
-    
     if (!userId) {
+      console.log('GET: Unauthorized, no user ID')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    // Get all marketplace credentials for the user
-    const marketplaces = ['poshmark', 'mercari', 'depop']
+    // Get credentials for all marketplaces
     const credentials = await Promise.all(
-      marketplaces.map(async (marketplace) => {
-        const creds = await MarketplaceAuthService.getCredentials(userId, marketplace)
+      defaultMarketplaces.map(async (marketplace) => {
+        const cred = await MarketplaceAuthService.getCredentials(userId, marketplace.id)
         return {
-          marketplace,
-          isConnected: !!creds?.isConnected
+          marketplace: marketplace.id,
+          isConnected: cred?.isConnected || false,
+          lastVerified: cred?.lastVerified || null
         }
       })
     )
 
-    return NextResponse.json({ credentials })
+    return NextResponse.json({
+      success: true,
+      credentials
+    })
   } catch (error) {
     console.error('Error fetching credentials:', error)
     return NextResponse.json(

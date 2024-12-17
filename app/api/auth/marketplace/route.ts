@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { loginToPoshmark, loginToMercari, loginToDepop } from '@/lib/puppeteer/marketplaces'
 import { getAuth } from '@clerk/nextjs/server'
 import { MarketplaceAuthService } from '@/lib/services/marketplace-auth'
+import { 
+  loginToPoshmark, 
+  loginToMercari, 
+  loginToDepop,
+  loginToEbay,
+  loginToFacebook,
+  loginToBonanza
+} from '@/lib/puppeteer/marketplaces'
 
 export async function POST(req: NextRequest) {
   console.log('Received marketplace auth request')
@@ -60,17 +67,33 @@ export async function POST(req: NextRequest) {
             if (result.success) {
               console.log('Mercari login successful, storing credentials')
               await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
-              return NextResponse.json({
-                success: true,
-                message: result.message,
-                requiresManualLogin: true
-              })
             }
             break
           case 'depop':
             result = await loginToDepop({ username, password })
             if (result.success) {
               console.log('Depop login successful, storing credentials')
+              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+            }
+            break
+          case 'ebay':
+            result = await loginToEbay({ username, password })
+            if (result.success) {
+              console.log('eBay login successful, storing credentials')
+              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+            }
+            break
+          case 'facebook':
+            result = await loginToFacebook({ username, password })
+            if (result.success) {
+              console.log('Facebook login successful, storing credentials')
+              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+            }
+            break
+          case 'bonanza':
+            result = await loginToBonanza({ username, password })
+            if (result.success) {
+              console.log('Bonanza login successful, storing credentials')
               await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
             }
             break
@@ -91,7 +114,11 @@ export async function POST(req: NextRequest) {
         }
 
         console.log('Login successful, returning response')
-        return NextResponse.json(result)
+        return NextResponse.json({
+          success: true,
+          message: result.message,
+          requiresManualLogin: true
+        })
       } catch (error) {
         console.error('Marketplace login error:', error)
         return NextResponse.json(
@@ -153,6 +180,41 @@ export async function GET(req: NextRequest) {
     console.error('Error checking connection status:', error)
     return NextResponse.json(
       { error: 'Failed to check connection status' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { userId } = getAuth(req)
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await req.json()
+    const { marketplace } = body
+
+    if (!marketplace) {
+      return NextResponse.json(
+        { error: 'Missing marketplace' },
+        { status: 400 }
+      )
+    }
+
+    await MarketplaceAuthService.removeCredentials(userId, marketplace)
+
+    return NextResponse.json({
+      success: true,
+      message: 'Marketplace disconnected successfully'
+    })
+  } catch (error) {
+    console.error('Error removing credentials:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
