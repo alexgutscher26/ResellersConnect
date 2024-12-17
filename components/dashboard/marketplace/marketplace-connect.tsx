@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
 import { Icon } from "@/components/ui/icon"
+import { cn } from "@/lib/utils"
 
 interface MarketplaceCredentials {
   username: string
@@ -170,7 +171,45 @@ export function MarketplaceConnect() {
   const [marketplaces, setMarketplaces] = useState(initialMarketplaces)
   const [selectedMarketplace, setSelectedMarketplace] = useState<Marketplace | null>(null)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchCredentials = async () => {
+      try {
+        const response = await fetch('/api/auth/marketplace/credentials')
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch credentials')
+        }
+
+        // Update marketplaces with connection status
+        setMarketplaces(prev => 
+          prev.map(marketplace => {
+            const credential = data.credentials.find(
+              (c: { marketplace: string }) => c.marketplace === marketplace.id
+            )
+            return {
+              ...marketplace,
+              connected: credential?.isConnected ?? false
+            }
+          })
+        )
+      } catch (error) {
+        console.error('Error fetching credentials:', error)
+        toast({
+          title: "Error",
+          description: "Failed to fetch marketplace connections",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCredentials()
+  }, [toast])
 
   const handleConnect = async (credentials: MarketplaceCredentials) => {
     if (!selectedMarketplace) return
@@ -267,54 +306,71 @@ export function MarketplaceConnect() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6">
-          {marketplaces.map((marketplace) => (
-            <div
-              key={marketplace.id}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12">
-                  <Image
-                    src={marketplace.logo}
-                    alt={marketplace.name}
-                    width={48}
-                    height={48}
-                    className="rounded-lg"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-semibold">{marketplace.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {marketplace.connected ? 'Connected' : 'Not connected'}
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant={marketplace.connected ? "secondary" : "default"}
-                onClick={() => {
-                  if (marketplace.connected) {
-                    handleDisconnect(marketplace)
-                  } else {
-                    setSelectedMarketplace(marketplace)
-                  }
-                }}
-                disabled={isAuthenticating}
+        {isLoading ? (
+          <div className="flex justify-center p-4">
+            <Icon name="spinner" className="w-4 h-4 mr-2 animate-spin" />
+            Loading...
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {marketplaces.map((marketplace) => (
+              <div
+                key={marketplace.id}
+                className="flex items-center justify-between p-4 border rounded-lg"
               >
-                {isAuthenticating && selectedMarketplace?.id === marketplace.id ? (
-                  <>
-                    <Icon name="spinner" className="w-4 h-4 mr-2 animate-spin" />
-                    Connecting...
-                  </>
-                ) : marketplace.connected ? (
-                  'Disconnect'
-                ) : (
-                  'Connect'
-                )}
-              </Button>
-            </div>
-          ))}
-        </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12">
+                    <Image
+                      src={marketplace.logo}
+                      alt={marketplace.name}
+                      width={48}
+                      height={48}
+                      className="rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{marketplace.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className={cn(
+                          "w-2 h-2 rounded-full",
+                          marketplace.connected 
+                            ? "bg-green-500 animate-pulse" 
+                            : "bg-red-500"
+                        )} 
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        {marketplace.connected ? 'Connected' : 'Not connected'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant={marketplace.connected ? "secondary" : "default"}
+                  onClick={() => {
+                    if (marketplace.connected) {
+                      handleDisconnect(marketplace)
+                    } else {
+                      setSelectedMarketplace(marketplace)
+                    }
+                  }}
+                  disabled={isAuthenticating}
+                >
+                  {isAuthenticating && selectedMarketplace?.id === marketplace.id ? (
+                    <>
+                      <Icon name="spinner" className="w-4 h-4 mr-2 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : marketplace.connected ? (
+                    'Disconnect'
+                  ) : (
+                    'Connect'
+                  )}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
       {selectedMarketplace && (
         <ConnectDialog
