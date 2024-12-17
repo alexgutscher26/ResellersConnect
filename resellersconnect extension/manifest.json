@@ -1,0 +1,103 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "name": "Crosslister by Flyp",
+  "description": "Crosslist to multiple marketplaces",
+  "version": "1.0.3",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "flypWeb.js"
+      ],
+      "matches": [
+        "*://localhost/*",
+        "*://flyp-lister-web.herokuapp.com/*",
+        "*://flyp-tools-dev-web.herokuapp.com/*",
+        "*://tools.joinflyp.com/*"
+      ]
+    },
+    {
+      "js": [
+        "poshmark.js"
+      ],
+      "matches": [
+        "*://poshmark.com/*"
+      ]
+    },
+    {
+      "js": [
+        "mercari.js"
+      ],
+      "matches": [
+        "*://www.mercari.com/*"
+      ]
+    },
+    {
+      "js": [
+        "facebook.js"
+      ],
+      "matches": [
+        "*://*.facebook.com/*"
+      ]
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "permissions": [
+    "webRequest",
+    "declarativeNetRequest",
+    "cookies"
+  ],
+  "host_permissions": [
+    "*://*.poshmark.com/*",
+    "*://*.mercari.com/*",
+    "*://*.depop.com/*",
+    "*://*.facebook.com/*",
+    "*://upload.facebook.com/*",
+    "*://flyp-lister-photos.s3-us-east-2.amazonaws.com/*",
+    "*://us-east-1-prod-app-service-media-default-picture-api-page.s3.amazonaws.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "poshmarkPage.js"
+      ],
+      "matches": [
+        "*://*.poshmark.com/*"
+      ]
+    },
+    {
+      "resources": [
+        "mercariPage.js"
+      ],
+      "matches": [
+        "*://www.mercari.com/*"
+      ]
+    },
+    {
+      "resources": [
+        "facebookPage.js"
+      ],
+      "matches": [
+        "*://*.facebook.com/*",
+        "*://web.facebook.com/*"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icons/flyp_16.png",
+    "48": "icons/flyp_48.png",
+    "128": "icons/flyp_128.png"
+  }
+}
