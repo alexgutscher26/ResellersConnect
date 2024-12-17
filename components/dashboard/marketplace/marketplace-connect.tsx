@@ -17,46 +17,12 @@ import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
 import { Icon } from "@/components/ui/icon"
 import { cn } from "@/lib/utils"
+import { Marketplace, defaultMarketplaces } from "@/config/marketplaces"
 
 interface MarketplaceCredentials {
   username: string
   password: string
 }
-
-interface Marketplace {
-  id: string
-  name: string
-  logo: string
-  connected: boolean
-}
-
-interface MarketplaceProps {
-  name: string
-  logo: string
-  isConnected: boolean
-  troubleshootingLink?: string
-}
-
-const initialMarketplaces: Marketplace[] = [
-  {
-    id: "poshmark",
-    name: "Poshmark",
-    logo: "/logos/poshmark.png",
-    connected: false
-  },
-  {
-    id: "mercari",
-    name: "Mercari",
-    logo: "/logos/mercari.png",
-    connected: false
-  },
-  {
-    id: "depop",
-    name: "Depop",
-    logo: "/logos/depop.png",
-    connected: false
-  }
-]
 
 interface ConnectDialogProps {
   marketplace: Marketplace
@@ -74,6 +40,7 @@ function ConnectDialog({ marketplace, onSubmit, onClose, open }: ConnectDialogPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await onSubmit(credentials)
+    setCredentials({ username: '', password: '' })
     onClose()
   }
 
@@ -120,61 +87,17 @@ function ConnectDialog({ marketplace, onSubmit, onClose, open }: ConnectDialogPr
   )
 }
 
-const MarketplaceItem = ({ 
-  name, 
-  logo, 
-  isConnected, 
-  troubleshootingLink 
-}: MarketplaceProps) => {
-  const handleConnect = () => {
-    // TODO: Implement actual connection logic
-    console.log(`${isConnected ? "Disconnecting from" : "Connecting to"} ${name}`)
-  }
-
-  return (
-    <div className="flex items-center justify-between p-4 border rounded-lg">
-      <div className="flex items-center space-x-4">
-        <div className="relative w-12 h-12">
-          <Image
-            src={logo}
-            alt={`${name} logo`}
-            fill
-            className="object-contain"
-          />
-        </div>
-        <div>
-          <h3 className="font-medium">{name}</h3>
-          <p className="text-sm text-muted-foreground">
-            {isConnected ? "Connected" : "Not connected"}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        {troubleshootingLink && !isConnected && (
-          <Button variant="ghost" size="sm" className="text-xs" asChild>
-            <a href={troubleshootingLink}>Trouble connecting?</a>
-          </Button>
-        )}
-        <Button
-          variant={isConnected ? "outline" : "default"}
-          size="sm"
-          onClick={handleConnect}
-        >
-          {isConnected ? "Disconnect" : "Connect"}
-        </Button>
-      </div>
-    </div>
-  )
-}
-
 export function MarketplaceConnect() {
-  const [marketplaces, setMarketplaces] = useState(initialMarketplaces)
+  const [marketplaces, setMarketplaces] = useState<Marketplace[]>([])
   const [selectedMarketplace, setSelectedMarketplace] = useState<Marketplace | null>(null)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
 
   useEffect(() => {
+    // Initialize with default marketplaces first
+    setMarketplaces(defaultMarketplaces)
+    
     const fetchCredentials = async () => {
       try {
         const response = await fetch('/api/auth/marketplace/credentials')
@@ -216,8 +139,6 @@ export function MarketplaceConnect() {
 
     setIsAuthenticating(true)
     try {
-      console.log('Connecting to marketplace:', selectedMarketplace.id)
-      
       const response = await fetch('/api/auth/marketplace', {
         method: 'POST',
         headers: {
@@ -229,18 +150,11 @@ export function MarketplaceConnect() {
         }),
       })
 
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server returned non-JSON response')
-      }
-
       const data = await response.json()
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to connect')
       }
-
-      console.log('Connection successful:', selectedMarketplace.name)
 
       // Update marketplace status
       setMarketplaces(prev =>
@@ -261,13 +175,6 @@ export function MarketplaceConnect() {
       let errorMessage = 'Failed to connect'
       if (error instanceof Error) {
         errorMessage = error.message
-      } else if (error instanceof Response) {
-        try {
-          const data = await error.json()
-          errorMessage = data.error || errorMessage
-        } catch {
-          errorMessage = `HTTP error ${error.status}`
-        }
       }
 
       toast({
@@ -282,23 +189,46 @@ export function MarketplaceConnect() {
   }
 
   const handleDisconnect = async (marketplace: Marketplace) => {
-    // TODO: Implement disconnect logic
-    setMarketplaces(prev =>
-      prev.map(m =>
-        m.id === marketplace.id
-          ? { ...m, connected: false }
-          : m
-      )
-    )
+    try {
+      const response = await fetch('/api/auth/marketplace', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          marketplace: marketplace.id,
+        }),
+      })
 
-    toast({
-      title: "Disconnected",
-      description: `Disconnected from ${marketplace.name}`,
-    })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to disconnect')
+      }
+
+      setMarketplaces(prev =>
+        prev.map(m =>
+          m.id === marketplace.id
+            ? { ...m, connected: false }
+            : m
+        )
+      )
+
+      toast({
+        title: "Success",
+        description: `Disconnected from ${marketplace.name}`,
+      })
+    } catch (error) {
+      console.error('Disconnect error:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to disconnect',
+        variant: "destructive",
+      })
+    }
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full" suppressHydrationWarning>
       <CardHeader>
         <CardTitle>Connect your accounts to crosslist</CardTitle>
         <CardDescription>
@@ -317,6 +247,7 @@ export function MarketplaceConnect() {
               <div
                 key={marketplace.id}
                 className="flex items-center justify-between p-4 border rounded-lg"
+                suppressHydrationWarning
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12">
