@@ -59,6 +59,13 @@ export async function POST(req: NextRequest) {
           break
         case 'mercari':
           result = await loginToMercari({ username, password })
+          if (result.success) {
+            return NextResponse.json({
+              success: true,
+              message: result.message,
+              requiresManualLogin: true
+            })
+          }
           break
         case 'depop':
           result = await loginToDepop({ username, password })
@@ -71,17 +78,12 @@ export async function POST(req: NextRequest) {
           )
       }
 
-      console.log('Login result:', { ...result, cookies: '[REDACTED]' })
-
       if (!result.success) {
         return NextResponse.json(
           { error: result.message },
           { status: 400 }
         )
       }
-
-      // TODO: Store cookies securely for future use
-      // You might want to encrypt these before storing in your database
 
       return NextResponse.json(result)
     } catch (error) {

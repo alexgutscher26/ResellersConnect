@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer'
+import open from 'open';
 
 interface MarketplaceCredentials {
   username: string
@@ -129,178 +130,28 @@ async function findChromeExecutable(): Promise<string> {
   }) || '';
 }
 
-export async function loginToMercari(credentials: MarketplaceCredentials) {
-  let browser;
+export interface LoginResult {
+  success: boolean;
+  message: string;
+  cookies?: any[];
+}
+
+export async function loginToMercari(credentials: MarketplaceCredentials): Promise<LoginResult> {
   try {
-    // Try connecting to existing Chrome instance
-    browser = await puppeteer.connect({
-      browserURL: 'http://localhost:9222',
-      defaultViewport: null
-    });
-  } catch (error) {
-    console.log('No debugging instance found, launching new browser...');
-    
-    const chromePath = await findChromeExecutable();
-    console.log('Using Chrome at:', chromePath);
+    // Open Mercari login page in default browser
+    await open('https://www.mercari.com/login/', { wait: false });
 
-    // Launch new browser instance
-    browser = await puppeteer.launch({
-      headless: false,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--remote-debugging-port=9222',
-        '--disable-blink-features=AutomationControlled'
-      ],
-      defaultViewport: null,
-      executablePath: chromePath || undefined // Use default if no Chrome found
-    });
-  }
-
-  let page: puppeteer.Page | null = null;
-
-  try {
-    // Get existing pages
-    const pages = await browser.pages();
-    page = pages[0];
-    
-    // If no pages exist, create a new one
-    if (!page) {
-      page = await browser.newPage();
-    }
-
-    // Increase timeout values but not too high to look suspicious
-    page.setDefaultNavigationTimeout(45000);
-    page.setDefaultTimeout(30000);
-
-    console.log('Navigating to Mercari login page...');
-    await page.goto('https://www.mercari.com/login/', {
-      waitUntil: 'domcontentloaded',
-      timeout: 45000
-    });
-
-    // Randomize wait times to appear more human-like
-    const randomWait = (min: number, max: number) => 
-      page!.waitForTimeout(Math.floor(Math.random() * (max - min + 1) + min));
-
-    await randomWait(1000, 2000);
-
-    console.log('Looking for email input...');
-    const emailSelector = 'input[type="email"], input[name="email"]';
-    await page.waitForSelector(emailSelector, { visible: true });
-    
-    // Type like a human with variable delays
-    for (const char of credentials.username) {
-      await page.type(emailSelector, char);
-      await randomWait(50, 150);
-    }
-
-    await randomWait(500, 1000);
-
-    console.log('Looking for password input...');
-    const passwordSelector = 'input[type="password"], input[name="password"]';
-    await page.waitForSelector(passwordSelector, { visible: true });
-    
-    // Type like a human with variable delays
-    for (const char of credentials.password) {
-      await page.type(passwordSelector, char);
-      await randomWait(50, 150);
-    }
-
-    await randomWait(800, 1200);
-
-    console.log('Looking for submit button...');
-    const submitSelector = 'button[type="submit"], button[data-testid="signin-submit-button"]';
-    const submitButton = await page.waitForSelector(submitSelector, { visible: true });
-    
-    if (!submitButton) {
-      throw new Error('Submit button not found');
-    }
-
-    // Move mouse naturally to the button
-    const buttonBox = await submitButton.boundingBox();
-    if (buttonBox) {
-      await page.mouse.move(
-        buttonBox.x + buttonBox.width / 2,
-        buttonBox.y + buttonBox.height / 2,
-        { steps: 10 }
-      );
-      await randomWait(100, 300);
-    }
-
-    console.log('Clicking submit button...');
-    await submitButton.click();
-    
-    // Wait for navigation with less strict conditions
-    await Promise.race([
-      page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 45000 }),
-      page.waitForSelector('[data-testid="error-message"]', { timeout: 45000 }).catch(() => null)
-    ]);
-
-    await randomWait(1500, 2500);
-
-    // Check login status
-    const loginStatus = await page.evaluate(() => {
-      const errorSelectors = [
-        '.error-message',
-        '[data-testid="error-message"]',
-        '.alert-error',
-        '.login-error'
-      ];
-      
-      for (const selector of errorSelectors) {
-        const errorElement = document.querySelector(selector);
-        if (errorElement?.textContent) {
-          return { error: errorElement.textContent.trim() };
-        }
-      }
-
-      const currentUrl = window.location.href;
-      if (currentUrl.includes('signin') || currentUrl.includes('login')) {
-        return { stillOnLoginPage: true };
-      }
-
-      return { success: true };
-    });
-
-    if (loginStatus.error) {
-      throw new Error(`Login failed: ${loginStatus.error}`);
-    }
-
-    if (loginStatus.stillOnLoginPage) {
-      throw new Error('Login verification required - please complete verification manually');
-    }
-
-    console.log('Getting cookies...');
-    const cookies = await page.cookies();
-
+    // Return success but indicate manual verification needed
     return {
       success: true,
-      cookies,
-      message: 'Successfully logged into Mercari'
+      message: 'Please complete login in your default browser. Once logged in, you can continue using the app.',
     };
-
   } catch (error) {
-    console.error('Mercari login error:', error);
+    console.error('Error opening browser:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to login to Mercari'
+      message: error instanceof Error ? error.message : 'Failed to open browser'
     };
-  } finally {
-    try {
-      if (page) {
-        await page.close().catch(() => {});
-      }
-      // Don't close the browser if we connected to an existing instance
-      if (browser && !browser.isConnected()) {
-        await browser.close().catch(() => {});
-      } else {
-        await browser.disconnect().catch(() => {});
-      }
-    } catch (error) {
-      console.error('Error cleaning up:', error);
-    }
   }
 }
 
