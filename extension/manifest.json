@@ -1,6 +1,5 @@
 {
-"update_url": "https://clients2.google.com/service/update2/crx",
-
+  "update_url": "https://clients2.google.com/service/update2/crx",
   "name": "Crosslister by Flyp",
   "description": "Crosslist to multiple marketplaces",
   "version": "1.0.3",
@@ -8,41 +7,59 @@
   "background": {
     "service_worker": "background.js"
   },
+  "permissions": [
+    "webRequest",
+    "declarativeNetRequest",
+    "cookies",
+    "tabs",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://localhost:*/*",
+    "*://*.poshmark.com/*",
+    "*://*.mercari.com/*",
+    "*://*.depop.com/*",
+    "*://*.facebook.com/*",
+    "*://upload.facebook.com/*",
+    "*://flyp-lister-photos.s3-us-east-2.amazonaws.com/*",
+    "*://us-east-1-prod-app-service-media-default-picture-api-page.s3.amazonaws.com/*",
+    "*://ebay.com/*",
+    "*://www.ebay.com/*"
+  ],
   "content_scripts": [
     {
-      "js": [
-        "flypWeb.js"
-      ],
       "matches": [
-        "*://localhost/*",
+        "*://localhost:*/*",
+        "*://127.0.0.1:*/*",
         "*://flyp-lister-web.herokuapp.com/*",
         "*://flyp-tools-dev-web.herokuapp.com/*",
         "*://tools.joinflyp.com/*"
-      ]
+      ],
+      "js": ["flypWeb.js"],
+      "run_at": "document_idle"
     },
     {
-      "js": [
-        "poshmark.js"
-      ],
       "matches": [
         "*://poshmark.com/*"
-      ]
+      ],
+      "js": ["poshmark.js"],
+      "run_at": "document_idle"
     },
     {
-      "js": [
-        "mercari.js"
-      ],
       "matches": [
         "*://www.mercari.com/*"
-      ]
+      ],
+      "js": ["mercari.js"],
+      "run_at": "document_idle"
     },
     {
-      "js": [
-        "facebook.js"
-      ],
       "matches": [
         "*://*.facebook.com/*"
-      ]
+      ],
+      "js": ["facebook.js"],
+      "run_at": "document_idle"
     }
   ],
   "declarative_net_request": {
@@ -54,20 +71,6 @@
       }
     ]
   },
-  "permissions": [
-    "webRequest",
-    "declarativeNetRequest",
-    "cookies"
-  ],
-  "host_permissions": [
-    "*://*.poshmark.com/*",
-    "*://*.mercari.com/*",
-    "*://*.depop.com/*",
-    "*://*.facebook.com/*",
-    "*://upload.facebook.com/*",
-    "*://flyp-lister-photos.s3-us-east-2.amazonaws.com/*",
-    "*://us-east-1-prod-app-service-media-default-picture-api-page.s3.amazonaws.com/*"
-  ],
   "web_accessible_resources": [
     {
       "resources": [
@@ -99,5 +102,11 @@
     "16": "icons/flyp_16.png",
     "48": "icons/flyp_48.png",
     "128": "icons/flyp_128.png"
+  },
+  "externally_connectable": {
+    "matches": [
+      "*://localhost:*/*",
+      "*://127.0.0.1:*/*"
+    ]
   }
 }

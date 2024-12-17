@@ -143,7 +143,7 @@ export function MarketplaceConnect() {
               size="sm"
               onClick={handleRefresh}
             >
-              <Icons.refresh className="w-4 h-4" />
+              <Icons.refreshCw className="w-4 h-4" />
               Refresh
             </Button>
           </div>

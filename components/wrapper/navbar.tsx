@@ -3,15 +3,15 @@ import Link from 'next/link';
 import * as React from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { Button } from "../ui/button";
-import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
-import { UserProfile } from "../user-profile";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { UserProfile } from "../user-profile"; 
 import ModeToggle from "../mode-toggle";
 import { BlocksIcon } from "lucide-react";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import config from "@/config";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
-import { Dialog, DialogClose } from "@radix-ui/react-dialog";
+import { Dialog, DialogClose } from "@/components/ui/dialog";
 
 const components: { title: string; href: string; description: string }[] = [
     {

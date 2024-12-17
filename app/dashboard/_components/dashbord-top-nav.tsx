@@ -4,7 +4,7 @@ import ModeToggle from '@/components/mode-toggle'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { UserProfile } from '@/components/user-profile'
 import config from '@/config'
 import { HamburgerMenuIcon } from '@radix-ui/react-icons'
@@ -16,7 +16,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col">
       <header className="flex h-14 lg:h-[55px] items-center gap-4 border-b px-3">
-        <Dialog>
+        <Sheet>
           <SheetTrigger className="min-[1024px]:hidden p-2 transition">
             <HamburgerMenuIcon />
             <Link href="/dashboard">
@@ -49,7 +49,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
               </DialogClose>
             </div>
           </SheetContent>
-        </Dialog>
+        </Sheet>
         <div className="flex justify-center items-center gap-2 ml-auto">
           {config?.auth?.enabled && <UserProfile />}
           <ModeToggle />
