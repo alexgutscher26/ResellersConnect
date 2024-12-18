@@ -51,12 +51,6 @@ Enable automated listing schedules for peak visibility times.
 
 Create tasks for re-listing stale items or following up on sales-related activities.
 
-Integration with Resale Platforms:
-
-Seamless API-based connections with platforms like eBay, Poshmark, Mercari, Depop, Facebook Marketplace, and others.
-
-Offer browser extension alternatives for platforms without APIs.
-
 Payment and Subscription Management:
 
 Flexible subscription plans with features like a free trial and tiered pricing based on listing volume.

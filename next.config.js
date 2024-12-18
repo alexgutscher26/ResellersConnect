@@ -3,6 +3,9 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['puppeteer-core']
   },
+  images: {
+    domains: ['utfs.io', 'seo-heist.s3.amazonaws.com'],
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Don't attempt to require these packages on the client
