@@ -98,6 +98,30 @@ export const VideoPlayer: React.FC<CustomVideoPlayerProps> = ({ videoSrc }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const player = playerRef.current;
+    const handlePlay = () => {
+      if (player) {
+        if (isPlaying) {
+          player.play().catch(() => {
+            // Handle any play errors
+          });
+        } else {
+          player.pause();
+        }
+      }
+    };
+
+    handlePlay();
+
+    return () => {
+      const player = playerRef.current;
+      if (player) {
+        player.pause();
+      }
+    };
+  }, [isPlaying]);
+
   const togglePlay = useCallback(() => {
     if (!videoRef.current) return;
     videoRef.current[isPlaying ? 'pause' : 'play']();

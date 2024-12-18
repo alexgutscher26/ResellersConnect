@@ -13,6 +13,7 @@ import LaunchUI from "@/components/logos/launch-ui";
 import ModeToggle from "../mode-toggle";
 import { UserProfile } from "../user-profile";
 import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default function Navbar() {
   const { userId } = useAuth();
@@ -23,13 +24,10 @@ export default function Navbar() {
       <div className="relative mx-auto max-w-container">
         <NavbarComponent>
           <NavbarLeft>
-            <a
-              href="/"
-              className="flex items-center gap-2 text-xl font-bold"
-            >
+            <Link href="/" className="flex items-center gap-2 text-xl font-bold">
               <LaunchUI />
               Launch UI
-            </a>
+            </Link>
             <Navigation />
           </NavbarLeft>
           <NavbarRight>
@@ -48,30 +46,27 @@ export default function Navbar() {
               </SheetTrigger>
               <SheetContent side="right">
                 <nav className="grid gap-6 text-lg font-medium">
-                  <a
-                    href="/"
-                    className="flex items-center gap-2 text-xl font-bold"
-                  >
+                  <Link href="/" className="flex items-center gap-2 text-xl font-bold">
                     <span>Launch UI</span>
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/"
                     className="text-muted-foreground hover:text-foreground"
                   >
                     Getting Started
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/"
                     className="text-muted-foreground hover:text-foreground"
                   >
                     Components
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/"
                     className="text-muted-foreground hover:text-foreground"
                   >
                     Documentation
-                  </a>
+                  </Link>
                 </nav>
               </SheetContent>
             </Sheet>

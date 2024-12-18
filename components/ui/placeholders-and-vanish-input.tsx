@@ -5,50 +5,64 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export function PlaceholdersAndVanishInput({
-  placeholders,
   onChange,
   onSubmit,
   className,
 }: {
-  placeholders: string[];
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   className?: string;
 }) {
-  const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
+  const [currentPlaceholder, setCurrentPlaceholder] = useState("");
+  const [placeholders] = useState([
+    "Search for products...",
+    "Find items to resell...",
+    "Discover trending items...",
+    "Browse inventory...",
+  ]);
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startAnimation = () => {
-    intervalRef.current = setInterval(() => {
-      setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
-    }, 3000);
-  };
-  const handleVisibilityChange = () => {
-    if (document.visibilityState !== "visible" && intervalRef.current) {
+  const [value, setValue] = useState("");
+  const [animating, setAnimating] = useState(false);
+
+  const intervalRef = useRef<NodeJS.Timeout>();
+  const currentIndexRef = useRef(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const newDataRef = useRef<any[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const startAnimation = useCallback(() => {
+    if (intervalRef.current) {
       clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    } else if (document.visibilityState === "visible") {
+    }
+
+    intervalRef.current = setInterval(() => {
+      currentIndexRef.current = (currentIndexRef.current + 1) % placeholders.length;
+      setCurrentPlaceholder(placeholders[currentIndexRef.current]);
+    }, 2000);
+
+    setCurrentPlaceholder(placeholders[currentIndexRef.current]);
+  }, [placeholders]);
+
+  const handleVisibilityChange = useCallback(() => {
+    if (document.hidden) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    } else {
       startAnimation();
     }
-  };
+  }, [startAnimation]);
 
   useEffect(() => {
     startAnimation();
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [placeholders]);
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const newDataRef = useRef<any[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [value, setValue] = useState("");
-  const [animating, setAnimating] = useState(false);
+  }, [handleVisibilityChange, startAnimation]);
 
   const draw = useCallback(() => {
     if (!inputRef.current) return;
@@ -208,6 +222,7 @@ export function PlaceholdersAndVanishInput({
           "placeholder-muted-foreground/60",
           animating && "text-transparent dark:text-transparent"
         )}
+        placeholder={currentPlaceholder}
       />
 
       <button
@@ -274,7 +289,7 @@ export function PlaceholdersAndVanishInput({
               }}
               className="text-sm text-muted-foreground/60 pl-3"
             >
-              {placeholders[currentPlaceholder]}
+              {currentPlaceholder}
             </motion.p>
           )}
         </AnimatePresence>

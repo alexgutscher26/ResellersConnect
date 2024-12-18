@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverExternalPackages: ['@prisma/client'],
     turbo: {
       rules: {
         // Configure Turbopack rules here
@@ -13,7 +12,6 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Don't attempt to require these packages on the client
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,

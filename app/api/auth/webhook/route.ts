@@ -1,6 +1,6 @@
 import { userCreate } from "@/utils/data/user/userCreate";
 import { userUpdate } from "@/utils/data/user/userUpdate";
-import { WebhookEvent } from "@clerk/nextjs/server";
+import type { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
@@ -55,49 +55,40 @@ export async function POST(req: Request) {
   const { id } = evt.data;
   const eventType = evt.type;
 
-
   switch (eventType) {
     case "user.created":
       try {
-        await userCreate({
-          email: payload?.data?.email_addresses?.[0]?.email_address,
-          first_name: payload?.data?.first_name,
-          last_name: payload?.data?.last_name,
-          profile_image_url: payload?.data?.profile_image_url,
-          user_id: payload?.data?.id,
-        });
-
-        return NextResponse.json({
-          status: 200,
-          message: "User info inserted",
-        });
-      } catch (error: any) {
-        return NextResponse.json({
-          status: 400,
-          message: error.message,
-        });
+        await userCreate(
+          payload?.data?.id as string,
+          payload?.data?.email_addresses?.[0]?.email_address as string
+        );
+        return NextResponse.json({ message: "User created" }, { status: 201 });
+      } catch (error) {
+        console.error("Error creating user:", error);
+        return NextResponse.json(
+          { error: "Error creating user" },
+          { status: 500 }
+        );
       }
       break;
 
     case "user.updated":
       try {
-        await userUpdate({
-          email: payload?.data?.email_addresses?.[0]?.email_address,
-          first_name: payload?.data?.first_name,
-          last_name: payload?.data?.last_name,
-          profile_image_url: payload?.data?.profile_image_url,
-          user_id: payload?.data?.id,
-        });
-
-        return NextResponse.json({
-          status: 200,
-          message: "User info updated",
-        });
-      } catch (error: any) {
-        return NextResponse.json({
-          status: 400,
-          message: error.message,
-        });
+        await userUpdate(
+          payload?.data?.id as string,
+          {
+            email: payload?.data?.email_addresses?.[0]?.email_address,
+            first_name: payload?.data?.first_name,
+            last_name: payload?.data?.last_name,
+          }
+        );
+        return NextResponse.json({ message: "User updated" }, { status: 200 });
+      } catch (error) {
+        console.error("Error updating user:", error);
+        return NextResponse.json(
+          { error: "Error updating user" },
+          { status: 500 }
+        );
       }
       break;
 
