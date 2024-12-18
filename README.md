@@ -142,9 +142,9 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 For security concerns, please review our [Security Policy](SECURITY.md).
 
-## 📚 Documentation
+<!-- ## 📚 Documentation
 
-For detailed documentation, visit our [Documentation Site](https://docs.resellersconnect.com).
+For detailed documentation, visit our [Documentation Site](https://docs.resellersconnect.com). -->
 
 <!-- ## 🌐 Links
 

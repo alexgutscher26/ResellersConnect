@@ -49,7 +49,7 @@ We appreciate the security community's efforts in helping keep ResellersConnect 
 
 ### How to Report
 
-1. **Email**: Send details to security@resellersconnect.com
+1. **Email**: Send details to security@resellersconnect.com -- Coming Soon
 2. **Expected Response Time**: Within 48 hours
 3. **Security Bug Bounty**: Available for qualified vulnerabilities
 
@@ -87,12 +87,6 @@ ResellersConnect complies with:
 - CCPA
 - PCI DSS (for payment processing)
 - SOC 2 Type II
-
-## Contact
-
-For security-related inquiries:
-- Email: security@resellersconnect.com
-- Emergency: security-emergency@resellersconnect.com
 
 ## Updates
 
