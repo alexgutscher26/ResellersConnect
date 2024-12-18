@@ -2,6 +2,11 @@
 const nextConfig = {
   experimental: {
     serverExternalPackages: ['@prisma/client'],
+    turbo: {
+      rules: {
+        // Configure Turbopack rules here
+      }
+    }
   },
   images: {
     domains: ['utfs.io', 'seo-heist.s3.amazonaws.com'],

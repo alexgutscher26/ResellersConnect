@@ -6,6 +6,7 @@ import { ArrowRightIcon, ShoppingBag, Repeat2, BarChart3 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
+import GradualSpacing from "@/components/ui/gradual-spacing";
 
 export default function HeroSection() {
   const { userId } = useAuth();
@@ -15,9 +16,10 @@ export default function HeroSection() {
       <div className="absolute inset-y-0 right-1/2 -z-10 -mr-96 w-[200%] origin-top-right skew-x-[-30deg] bg-gradient-to-t from-background to-muted shadow-xl ring-1 ring-indigo-50 sm:-mr-80 lg:-mr-96" />
       <div className="mx-auto max-w-3xl text-center px-4">
         <Badge variant="outline" className="inline-flex animate-fade-in">
-          <span className="text-muted-foreground">
-            Simplify Your Reselling Business
-          </span>
+          <GradualSpacing
+            text="Simplify Your Reselling Business"
+            className="text-muted-foreground"
+          />
           <ArrowRightIcon className="h-3 w-3 ml-2" />
         </Badge>
         <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent animate-fade-in">
