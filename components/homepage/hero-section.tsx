@@ -1,69 +1,57 @@
-import { ArrowRight, Github } from 'lucide-react';
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRightIcon, ShoppingBag, Repeat2, BarChart3 } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
-import { BorderBeam } from "../magicui/border-beam";
-import { Button } from "../ui/button";
-import Image from 'next/image';
-import { TITLE_TAILWIND_CLASS } from '@/utils/constants';
+import { useAuth } from "@clerk/nextjs";
 
 export default function HeroSection() {
-    return (
-        <section className='flex flex-col items-center justify-center leading-6 mt-[3rem]' aria-label="Nextjs Starter Kit Hero">
-            <h1 className={`${TITLE_TAILWIND_CLASS} scroll-m-20 font-semibold tracking-tight text-center max-w-[1120px] bg-gradient-to-b dark:text-white`}>
-                Nextjs Starter Kit: Build & Ship Fast
-            </h1>
-            <p className="mx-auto max-w-[700px] text-gray-500 text-center mt-2 dark:text-gray-400">
-                The Ultimate Nextjs 14 Starter Kit for quickly building your SaaS, giving you time to focus on what really matters
-            </p>
-            <div className="flex justify-center items-center gap-3">
-                <Link href="/dashboard" className="mt-5">
-                    <Button className="animate-buttonheartbeat rounded-md bg-blue-600 hover:bg-blue-500 text-sm font-semibold text-white">
-                        Get Started
-                    </Button>
-                </Link>
-
-                <Link
-                    href="https://discord.gg/HUcHdrrDgY"
-                    target='_blank'
-                    className="mt-5"
-                    aria-label="Join Discord (opens in a new tab)"
-                >
-                    <Button variant="outline" className="flex gap-1">
-                        Join Discord
-                        <ArrowRight className='w-4 h-4' aria-hidden="true" />
-                    </Button>
-                </Link>
-                <Link
-                    href="https://github.com/michaelshimeles/nextjs14-starter-template"
-                    target='_blank'
-                    className='animate-buttonheartbeat border p-2 rounded-full mt-5 hover:dark:bg-black hover:cursor-pointer'
-                    aria-label="View NextJS 14 Starter Template on GitHub"
-                >
-                    <Github className='w-5 h-5' aria-hidden="true" />
-                </Link>
+  const { userId } = useAuth();
+  
+  return (
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-y-0 right-1/2 -z-10 -mr-96 w-[200%] origin-top-right skew-x-[-30deg] bg-gradient-to-t from-background to-muted shadow-xl ring-1 ring-indigo-50 sm:-mr-80 lg:-mr-96" />
+      <div className="mx-auto max-w-3xl text-center px-4">
+        <Badge variant="outline" className="inline-flex animate-fade-in">
+          <span className="text-muted-foreground">
+            Simplify Your Reselling Business
+          </span>
+          <ArrowRightIcon className="h-3 w-3 ml-2" />
+        </Badge>
+        <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent animate-fade-in">
+          Your All-in-One Reselling Platform
+        </h1>
+        <p className="mt-4 text-lg leading-8 text-muted-foreground animate-fade-in max-w-2xl mx-auto">
+          Manage inventory, crosslist items, and sync updates across multiple marketplaces. Save time and grow your reselling business with our powerful automation tools.
+        </p>
+        <div className="mt-6 flex justify-center items-center gap-x-6 animate-fade-in">
+          <Link href={userId ? "/dashboard" : "/sign-up"}>
+            <Button size="lg" className="gap-2">
+              {userId ? "Go to Dashboard" : "Get Started"} <ArrowRightIcon className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+        
+        <dl className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-3 animate-fade-in">
+          {[
+            { name: 'Active Sellers', value: '10,000+', icon: ShoppingBag },
+            { name: 'Items Listed', value: '1M+', icon: Repeat2 },
+            { name: 'Revenue Generated', value: '$50M+', icon: BarChart3 },
+          ].map((stat) => (
+            <div key={stat.name} className="flex flex-col items-center gap-y-3">
+              <dt className="text-sm leading-6 text-muted-foreground flex items-center gap-2">
+                <stat.icon className="h-5 w-5" />
+                {stat.name}
+              </dt>
+              <dd className="text-2xl font-semibold tracking-tight">
+                {stat.value}
+              </dd>
             </div>
-            <div>
-                <div className="relative flex max-w-6xl justify-center overflow-hidden mt-7">
-                    <div className="relative rounded-xl">
-                        <Image
-                            src="https://utfs.io/f/31dba2ff-6c3b-4927-99cd-b928eaa54d5f-5w20ij.png"
-                            alt="Nextjs Starter Kit Dashboard Preview"
-                            width={1100}
-                            height={550}
-                            priority={true}
-                            className="block rounded-[inherit] border object-contain shadow-lg dark:hidden"
-                        />
-                        <Image
-                            src="https://utfs.io/f/69a12ab1-4d57-4913-90f9-38c6aca6c373-1txg2.png"
-                            width={1100}
-                            height={550}
-                            alt="Nextjs Starter Kit Dark Mode Dashboard Preview"
-                            priority={true}
-                            className="dark:block rounded-[inherit] border object-contain shadow-lg hidden"
-                        />
-                        <BorderBeam size={250} duration={12} delay={9} />
-                    </div>
-                </div>
-            </div>
-        </section>
-    )
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
 }

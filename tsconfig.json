@@ -17,6 +17,7 @@
     "allowUnreachableCode": true,
     "useUnknownInCatchVariables": true,
     "resolvePackageJsonImports": true,
+    "strictFunctionTypes": true,
     "allowUnusedLabels": true,
     "isolatedModules": true,
     "jsx": "preserve",

@@ -5,6 +5,7 @@ import MarketingCards from "@/components/homepage/marketing-cards";
 import Pricing from "@/components/homepage/pricing";
 import SideBySide from "@/components/homepage/side-by-side";
 import PageWrapper from "@/components/wrapper/page-wrapper";
+import { BentoDemo } from "@/components/homepage/bento";
 import config from "@/config";
 
 export default function Home() {
@@ -13,6 +14,9 @@ export default function Home() {
       <div className="flex flex-col justify-center items-center w-full mt-[1rem] p-3">
         <HeroSection />
       </div>
+      <div className="flex my-[8rem] w-full justify-center items-center">
+      <BentoDemo />
+    </div>
       <div className="flex my-[8rem] w-full justify-center items-center">
         <SideBySide />
       </div>
