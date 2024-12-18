@@ -4,6 +4,7 @@ import HeroSection from "@/components/homepage/hero-section";
 import MarketingCards from "@/components/homepage/marketing-cards";
 import Pricing from "@/components/homepage/pricing";
 import SideBySide from "@/components/homepage/side-by-side";
+import { Lights } from "@/components/ui/background-lights";
 import PageWrapper from "@/components/wrapper/page-wrapper";
 import config from "@/config";
 
@@ -12,6 +13,13 @@ export default function Home() {
     <PageWrapper>
       <div className="flex flex-col justify-center items-center w-full mt-[1rem] p-3">
         <HeroSection />
+      </div>
+      <div
+        className={
+          "absolute bottom-0 left-0 w-full h-full z-0 animate-appear opacity-0"
+        }
+      >
+        <Lights />
       </div>
       <div className="flex my-[8rem] w-full justify-center items-center">
         <SideBySide />
@@ -22,9 +30,11 @@ export default function Home() {
       <div className="max-w-[1200px] p-8 mt-[2rem] lg:mt-[6rem] lg:mb-[5rem]">
         <BlogSample />
       </div>
-      {(config.auth.enabled && config.payments.enabled) && <div>
-        <Pricing />
-      </div>}
+      {config.auth.enabled && config.payments.enabled && (
+        <div>
+          <Pricing />
+        </div>
+      )}
       <div className="flex justify-center items-center w-full my-[8rem]">
         <AccordionComponent />
       </div>
