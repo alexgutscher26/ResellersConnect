@@ -1,6 +1,19 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    turbo: {
+      rules: {
+        // Configure Turbopack rules here
+        // Using false to disable specific rules
+        '*.server.ts': false,
+        '*.client.ts': false,
+        '*.css': false,
+        '*.module.css': false,
+        '*.svg': false
+      }
+    }
+  },
   images: {
     remotePatterns: [{
       protocol: 'https',
@@ -28,6 +41,19 @@ const nextConfig: NextConfig = {
       port: '',
       pathname: '/**'
     }]
-  }
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        child_process: false,
+      };
+    }
+    return config;
+  },
 };
+
 export default nextConfig;
