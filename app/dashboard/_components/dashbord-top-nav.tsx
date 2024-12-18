@@ -19,8 +19,24 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
+import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input'
 
 export default function DashboardTopNav({ children }: { children: ReactNode }) {
+  const placeholders = [
+    "Search products...",
+    "Find listings...",
+    "Search inventory..."
+  ]
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value)
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    console.log("submitted")
+  }
+
   return (
     <div className="flex flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -44,34 +60,16 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           </Sheet>
 
           <div className="flex flex-1 items-center gap-4 md:gap-6 md:px-6">
-            <form className="hidden flex-1 lg:block">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search products, listings, orders..."
-                  className="w-full appearance-none pl-9 pr-12 bg-background/60"
-                />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="absolute right-1 top-1 h-7 w-7"
-                >
-                  <Filter className="h-4 w-4" />
-                  <span className="sr-only">Filter results</span>
-                </Button>
-              </div>
-            </form>
+            <div className="hidden flex-1 lg:block">
+              <PlaceholdersAndVanishInput
+                placeholders={placeholders}
+                onChange={handleChange}
+                onSubmit={handleSubmit}
+                icon={<Search className="h-4 w-4" />}
+                className="w-[400px]"
+              />
+            </div>
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative hidden md:flex"
-              >
-                <Search className="h-5 w-5 lg:hidden" />
-                <span className="sr-only">Search</span>
-              </Button>
-              
               <Button
                 variant="default"
                 size="sm"
