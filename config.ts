@@ -74,8 +74,10 @@ export interface AppConfig {
   analytics: AnalyticsConfig;
   storage: StorageConfig;
   features: {
+    crosslisting: boolean;
     bulkActions: boolean;
     analytics: boolean;
+    ai: boolean;
     automation: boolean;
     inventory: boolean;
   };
@@ -152,8 +154,10 @@ const config: AppConfig = {
     },
   },
   features: {
+    crosslisting: true,
     bulkActions: true,
     analytics: true,
+    ai: true,
     automation: true,
     inventory: true,
   },
