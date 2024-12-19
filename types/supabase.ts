@@ -19,7 +19,8 @@ export enum Platform {
   POSHMARK = "poshmark",
   MERCARI = "mercari",
   FACEBOOK = "facebook",
-  DEPOP = "depop"
+  DEPOP = "depop",
+  BONANZA = "bonanza"
 }
 
 export enum Condition {
