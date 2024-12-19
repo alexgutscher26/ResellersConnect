@@ -37,7 +37,7 @@ ResellersConnect is a powerful SaaS platform designed to streamline inventory ma
 - pnpm (we use pnpm for package management)
 - Accounts and API keys for:
   - Clerk (Authentication)
-  - NeonDB (Database)
+  - Supabase (Database)
   - Lemon Squeezy (Payments)
   - Various marketplace APIs (eBay, Poshmark, etc.)
 
