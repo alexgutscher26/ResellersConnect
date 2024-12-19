@@ -169,13 +169,14 @@ export function MarketplaceConnect() {
         setMarketplaces(prev => 
           prev.map(marketplace => {
             const credential = data.credentials.find(
-              (c: { marketplace: string }) => c.marketplace === marketplace.id
+              (c: { marketplace: string; isConnected: boolean; lastSync?: string; itemCount?: number }) => 
+                c.marketplace === marketplace.id
             )
             return {
               ...marketplace,
               connected: credential?.isConnected ?? false,
               lastSync: credential?.lastSync,
-              itemCount: credential?.itemCount ?? 0
+              itemCount: credential?.itemCount
             }
           })
         )
@@ -223,7 +224,7 @@ export function MarketplaceConnect() {
       setMarketplaces(prev =>
         prev.map(m =>
           m.id === selectedMarketplace.id
-            ? { ...m, connected: true, lastSync: new Date().toISOString() }
+            ? { ...m, connected: true, lastSync: new Date().toISOString(), itemCount: data.itemCount }
             : m
         )
       )
