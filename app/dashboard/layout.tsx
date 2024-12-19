@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import { type ReactNode } from "react"
 import DashboardSideBar from "./_components/dashboard-side-bar"
 import DashboardTopNav from "./_components/dashbord-top-nav"
 import { isAuthorized } from "@/utils/data/user/isAuthorized"

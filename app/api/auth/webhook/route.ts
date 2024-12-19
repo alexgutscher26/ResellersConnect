@@ -70,14 +70,13 @@ export async function POST(req: Request) {
           { status: 500 }
         );
       }
-      break;
 
     case "user.updated":
       try {
         await userUpdate(evt.data.id as string, {
           email: evt.data.email_addresses?.[0]?.email_address || undefined,
-          first_name: evt.data.first_name || undefined,
-          last_name: evt.data.last_name || undefined,
+          firstName: evt.data.first_name || undefined,
+          lastName: evt.data.last_name || undefined,
         });
         return NextResponse.json({ message: "User updated" }, { status: 200 });
       } catch (error) {
@@ -87,13 +86,10 @@ export async function POST(req: Request) {
           { status: 500 }
         );
       }
-      break;
 
     default:
-      return new Response("Error occured -- unhandeled event type", {
+      return new Response("Error occurred -- unhandled event type", {
         status: 400,
       });
   }
-
-  return new Response("", { status: 201 });
 }
