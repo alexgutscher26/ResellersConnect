@@ -57,7 +57,7 @@ export function MarketplaceConnections() {
                 <div className="font-medium capitalize">
                   {connection.marketplace}
                 </div>
-                <Badge variant={connection.isConnected ? "success" : "secondary"}>
+                <Badge variant={connection.isConnected ? "default" : "secondary"}>
                   {connection.isConnected ? "Connected" : "Not Connected"}
                 </Badge>
                 {connection.lastVerified && (

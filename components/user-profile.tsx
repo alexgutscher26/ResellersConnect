@@ -16,7 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import config from "@/config"
-import { SignOutButton, useUser } from "@clerk/nextjs"
+import { useClerk, useUser } from "@clerk/nextjs"
 import {
     CreditCard,
     HelpCircle,
@@ -33,6 +33,7 @@ export function UserProfile() {
     const router = useRouter()
     const { toast } = useToast()
     const { user, isLoaded, isSignedIn } = useUser()
+    const { signOut } = useClerk()
 
     if (!config?.auth?.enabled) {
         router.back()
@@ -59,12 +60,16 @@ export function UserProfile() {
         ? `${user.firstName[0]}${user.lastName[0]}`
         : user?.firstName?.[0] ?? "?"
 
-    const handleSignOutError = () => {
-        toast({
-            title: "Error signing out",
-            description: "Please try again later",
-            variant: "destructive",
-        })
+    const handleSignOut = async () => {
+        try {
+            await signOut(() => router.push('/'))
+        } catch (error) {
+            toast({
+                title: "Error signing out",
+                description: "Please try again later",
+                variant: "destructive",
+            })
+        }
     }
 
     return (
@@ -126,12 +131,13 @@ export function UserProfile() {
                     </Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <SignOutButton signOutCallback={handleSignOutError}>
-                    <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
-                    </DropdownMenuItem>
-                </SignOutButton>
+                <DropdownMenuItem 
+                    className="text-red-600 focus:text-red-600 cursor-pointer"
+                    onClick={handleSignOut}
+                >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )
