@@ -3,24 +3,49 @@
 import { auth } from "@clerk/nextjs/server";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { type Database } from "@/types/supabase";
+import { type PostgrestError } from "@supabase/supabase-js";
 
-export async function actionTemplate() {
-  const { userId } = await auth();
+export type ActionResponse<T> = {
+  data: T | null;
+  error: string | null;
+};
 
-  if (!userId) {
-    return "You must be signed in";
-  }
-
-  const supabase = createServerComponentClient({ cookies });
-
+export async function actionTemplate(): Promise<ActionResponse<Database["public"]["Tables"]["user"]["Row"][]>> {
   try {
-    let { data: user, error } = await supabase.from("user").select("*");
+    const { userId } = await auth();
 
-    if (user) return user;
+    if (!userId) {
+      return {
+        data: null,
+        error: "Unauthorized: You must be signed in to perform this action"
+      };
+    }
 
-    if (error) return error;
-  } catch (error: any) {
-    throw new Error(error.message);
+    const supabase = createServerComponentClient<Database>({ cookies });
+
+    const { data, error } = await supabase
+      .from("user")
+      .select("*");
+
+    if (error) {
+      console.error("Database error:", error);
+      return {
+        data: null,
+        error: error.message
+      };
+    }
+
+    return {
+      data,
+      error: null
+    };
+
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "An unexpected error occurred"
+    };
   }
-
 }
