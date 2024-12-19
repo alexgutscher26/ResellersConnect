@@ -16,7 +16,7 @@ import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function Navbar() {
-  const { userId } = useAuth();
+  const { userId, isSignedIn } = useAuth();
   
   return (
     <header className="sticky top-0 z-50 -mb-4 px-4 pb-4">
@@ -30,8 +30,26 @@ export default function Navbar() {
             </Link>
             <Navigation />
           </NavbarLeft>
-          <NavbarRight>
-            {userId && <UserProfile />}
+          <NavbarRight className="flex items-center gap-4">
+            {isSignedIn ? (
+              <>
+                <Link href="/dashboard">
+                  <Button variant="ghost" className="hidden md:flex">
+                    Dashboard
+                  </Button>
+                </Link>
+                <UserProfile />
+              </>
+            ) : (
+              <div className="hidden space-x-2 md:flex">
+                <Link href="/sign-in">
+                  <Button variant="ghost">Sign in</Button>
+                </Link>
+                <Link href="/sign-up">
+                  <Button>Sign up</Button>
+                </Link>
+              </div>
+            )}
             <ModeToggle />
             <Sheet>
               <SheetTrigger asChild>
@@ -49,24 +67,16 @@ export default function Navbar() {
                   <Link href="/" className="flex items-center gap-2 text-xl font-bold">
                     <span>Launch UI</span>
                   </Link>
-                  <Link
-                    href="/"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Getting Started
-                  </Link>
-                  <Link
-                    href="/"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Components
-                  </Link>
-                  <Link
-                    href="/"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Documentation
-                  </Link>
+                  {!isSignedIn && (
+                    <div className="flex flex-col gap-2">
+                      <Link href="/sign-in">
+                        <Button variant="ghost" className="w-full">Sign in</Button>
+                      </Link>
+                      <Link href="/sign-up">
+                        <Button className="w-full">Sign up</Button>
+                      </Link>
+                    </div>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>
