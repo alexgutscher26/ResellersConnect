@@ -59,8 +59,8 @@ export async function POST(req: Request) {
     case "user.created":
       try {
         await userCreate(
-          payload?.data?.id as string,
-          payload?.data?.email_addresses?.[0]?.email_address as string
+          evt.data.id as string,
+          evt.data.email_addresses?.[0]?.email_address as string
         );
         return NextResponse.json({ message: "User created" }, { status: 201 });
       } catch (error) {
@@ -74,14 +74,11 @@ export async function POST(req: Request) {
 
     case "user.updated":
       try {
-        await userUpdate(
-          payload?.data?.id as string,
-          {
-            email: payload?.data?.email_addresses?.[0]?.email_address,
-            first_name: payload?.data?.first_name,
-            last_name: payload?.data?.last_name,
-          }
-        );
+        await userUpdate(evt.data.id as string, {
+          email: evt.data.email_addresses?.[0]?.email_address || undefined,
+          first_name: evt.data.first_name || undefined,
+          last_name: evt.data.last_name || undefined,
+        });
         return NextResponse.json({ message: "User updated" }, { status: 200 });
       } catch (error) {
         console.error("Error updating user:", error);

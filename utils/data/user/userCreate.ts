@@ -1,11 +1,12 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 export async function userCreate(userId: string, email: string) {
   try {
-    const user = await db.user.create({
+    const user = await prisma.user.create({
       data: {
-        id: userId,
+        user_id: userId,
         email: email,
+        created_time: new Date(),
       },
     });
     return user;

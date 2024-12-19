@@ -1,12 +1,26 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
-export async function userUpdate(userId: string, data: any) {
+interface UserUpdateData {
+  email?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  gender?: string | null;
+  profile_image_url?: string | null;
+  subscription?: string | null;
+}
+
+export async function userUpdate(userId: string, data: UserUpdateData) {
   try {
-    const user = await db.user.update({
+    // Filter out null values from the data
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== null)
+    ) as Omit<UserUpdateData, keyof UserUpdateData> & { [K in keyof UserUpdateData]: string };
+
+    const user = await prisma.user.update({
       where: {
-        id: userId,
+        user_id: userId,
       },
-      data: data,
+      data: filteredData,
     });
     return user;
   } catch (error) {
