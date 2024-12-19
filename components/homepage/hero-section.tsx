@@ -3,13 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightIcon, ShoppingBag, Repeat2, BarChart3 } from "lucide-react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import GradualSpacing from "@/components/ui/gradual-spacing";
 
 export default function HeroSection() {
-  const { userId } = useAuth();
+  const { userId, isSignedIn } = useAuth();
   
   return (
     <section className="relative overflow-hidden">
@@ -29,11 +28,23 @@ export default function HeroSection() {
           Manage inventory, crosslist items, and sync updates across multiple marketplaces. Save time and grow your reselling business with our powerful automation tools.
         </p>
         <div className="mt-6 flex justify-center items-center gap-x-6 animate-fade-in">
-          <Link href={userId ? "/dashboard" : "/sign-up"}>
-            <Button size="lg" className="gap-2">
-              {userId ? "Go to Dashboard" : "Get Started"} <ArrowRightIcon className="h-4 w-4" />
-            </Button>
-          </Link>
+          {isSignedIn ? (
+            <Link href="/dashboard">
+              <Button size="lg" variant="shine" className="gap-2">
+                Go to Dashboard
+                <ArrowRightIcon className="h-5 w-5" />
+              </Button>
+            </Link>
+          ) : (
+            <div className="flex gap-4">
+              <Link href="/sign-in">
+                <Button variant="ghost" size="lg">Sign in</Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button size="lg">Sign up</Button>
+              </Link>
+            </div>
+          )}
         </div>
         
         <dl className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-3 animate-fade-in">
@@ -47,7 +58,7 @@ export default function HeroSection() {
                 <stat.icon className="h-5 w-5" />
                 {stat.name}
               </dt>
-              <dd className="text-2xl font-semibold tracking-tight">
+              <dd className="order-first text-3xl font-semibold tracking-tight">
                 {stat.value}
               </dd>
             </div>

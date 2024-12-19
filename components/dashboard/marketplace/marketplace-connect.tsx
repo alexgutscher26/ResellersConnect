@@ -14,14 +14,19 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Image from "next/image"
 import { Icon } from "@/components/ui/icon"
 import { cn } from "@/lib/utils"
-import { Marketplace, defaultMarketplaces } from "@/config/marketplaces"
+import { type Marketplace, defaultMarketplaces } from "@/config/marketplaces"
+import { AlertCircle, CheckCircle2, HelpCircle } from "lucide-react"
 
 interface MarketplaceCredentials {
   username: string
   password: string
+  apiKey?: string
 }
 
 interface ConnectDialogProps {
@@ -35,20 +40,36 @@ function ConnectDialog({ marketplace, onSubmit, onClose, open }: ConnectDialogPr
   const [credentials, setCredentials] = useState<MarketplaceCredentials>({
     username: '',
     password: '',
+    apiKey: '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await onSubmit(credentials)
-    setCredentials({ username: '', password: '' })
-    onClose()
+    setIsSubmitting(true)
+    try {
+      await onSubmit(credentials)
+      setCredentials({ username: '', password: '', apiKey: '' })
+      onClose()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Connect to {marketplace.name}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Image
+              src={marketplace.logo}
+              alt={marketplace.name}
+              width={24}
+              height={24}
+              className="rounded"
+            />
+            Connect to {marketplace.name}
+          </DialogTitle>
           <DialogDescription>
             Enter your {marketplace.name} credentials to connect your account
           </DialogDescription>
@@ -62,6 +83,8 @@ function ConnectDialog({ marketplace, onSubmit, onClose, open }: ConnectDialogPr
                 value={credentials.username}
                 onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
                 required
+                disabled={isSubmitting}
+                autoComplete="username"
               />
             </div>
             <div className="grid gap-2">
@@ -72,14 +95,50 @@ function ConnectDialog({ marketplace, onSubmit, onClose, open }: ConnectDialogPr
                 value={credentials.password}
                 onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
                 required
+                disabled={isSubmitting}
+                autoComplete="current-password"
               />
             </div>
+            {marketplace.requiresApiKey && (
+              <div className="grid gap-2">
+                <Label htmlFor="apiKey" className="flex items-center gap-2">
+                  API Key
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>You can find your API key in your {marketplace.name} account settings</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <Input
+                  id="apiKey"
+                  type="password"
+                  value={credentials.apiKey}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, apiKey: e.target.value }))}
+                  required={marketplace.requiresApiKey}
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit">Connect</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Icon name="spinner" className="w-4 h-4 mr-2 animate-spin" />
+                  Connecting...
+                </>
+              ) : (
+                'Connect'
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -92,10 +151,10 @@ export function MarketplaceConnect() {
   const [selectedMarketplace, setSelectedMarketplace] = useState<Marketplace | null>(null)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [connectionProgress, setConnectionProgress] = useState(0)
   const { toast } = useToast()
 
   useEffect(() => {
-    // Initialize with default marketplaces first
     setMarketplaces(defaultMarketplaces)
     
     const fetchCredentials = async () => {
@@ -107,7 +166,6 @@ export function MarketplaceConnect() {
           throw new Error(data.error || 'Failed to fetch credentials')
         }
 
-        // Update marketplaces with connection status
         setMarketplaces(prev => 
           prev.map(marketplace => {
             const credential = data.credentials.find(
@@ -115,10 +173,16 @@ export function MarketplaceConnect() {
             )
             return {
               ...marketplace,
-              connected: credential?.isConnected ?? false
+              connected: credential?.isConnected ?? false,
+              lastSync: credential?.lastSync,
+              itemCount: credential?.itemCount ?? 0
             }
           })
         )
+
+        // Calculate connection progress
+        const connectedCount = data.credentials.filter((c: { isConnected: boolean }) => c.isConnected).length
+        setConnectionProgress((connectedCount / defaultMarketplaces.length) * 100)
       } catch (error) {
         console.error('Error fetching credentials:', error)
         toast({
@@ -156,14 +220,17 @@ export function MarketplaceConnect() {
         throw new Error(data.error || 'Failed to connect')
       }
 
-      // Update marketplace status
       setMarketplaces(prev =>
         prev.map(m =>
           m.id === selectedMarketplace.id
-            ? { ...m, connected: true }
+            ? { ...m, connected: true, lastSync: new Date().toISOString() }
             : m
         )
       )
+
+      // Update progress
+      const connectedCount = marketplaces.filter(m => m.connected).length + 1
+      setConnectionProgress((connectedCount / marketplaces.length) * 100)
 
       toast({
         title: "Success",
@@ -171,15 +238,9 @@ export function MarketplaceConnect() {
       })
     } catch (error) {
       console.error('Connection error:', error)
-      
-      let errorMessage = 'Failed to connect'
-      if (error instanceof Error) {
-        errorMessage = error.message
-      }
-
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Failed to connect',
         variant: "destructive",
       })
     } finally {
@@ -208,10 +269,14 @@ export function MarketplaceConnect() {
       setMarketplaces(prev =>
         prev.map(m =>
           m.id === marketplace.id
-            ? { ...m, connected: false }
+            ? { ...m, connected: false, lastSync: undefined }
             : m
         )
       )
+
+      // Update progress
+      const connectedCount = marketplaces.filter(m => m.connected).length - 1
+      setConnectionProgress((connectedCount / marketplaces.length) * 100)
 
       toast({
         title: "Success",
@@ -227,30 +292,48 @@ export function MarketplaceConnect() {
     }
   }
 
+  const getConnectionStatus = (marketplace: Marketplace) => {
+    if (!marketplace.connected) {
+      return (
+        <Badge variant="outline" className="gap-1 text-muted-foreground">
+          <AlertCircle className="h-3 w-3" />
+          Not connected
+        </Badge>
+      )
+    }
+
+    return (
+      <Badge variant="default" className="gap-1 bg-green-500">
+        <CheckCircle2 className="h-3 w-3" />
+        Connected
+      </Badge>
+    )
+  }
+
   return (
-    <Card className="w-full" suppressHydrationWarning>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>Connect your accounts to crosslist</CardTitle>
+        <CardTitle>Connect your accounts</CardTitle>
         <CardDescription>
-          Connect your marketplace accounts to start crosslisting
+          Connect your marketplace accounts to start crosslisting. Progress: {Math.round(connectionProgress)}%
         </CardDescription>
+        <Progress value={connectionProgress} className="h-2" />
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center p-4">
             <Icon name="spinner" className="w-4 h-4 mr-2 animate-spin" />
-            Loading...
+            Loading marketplace connections...
           </div>
         ) : (
           <div className="grid gap-6">
             {marketplaces.map((marketplace) => (
               <div
                 key={marketplace.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-                suppressHydrationWarning
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12">
+                  <div className="w-12 h-12 relative">
                     <Image
                       src={marketplace.logo}
                       alt={marketplace.name}
@@ -258,21 +341,30 @@ export function MarketplaceConnect() {
                       height={48}
                       className="rounded-lg"
                     />
+                    {marketplace.connected && (
+                      <div className="absolute -top-1 -right-1">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      </div>
+                    )}
                   </div>
-                  <div>
+                  <div className="space-y-1">
                     <h3 className="font-semibold">{marketplace.name}</h3>
                     <div className="flex items-center gap-2">
-                      <div 
-                        className={cn(
-                          "w-2 h-2 rounded-full",
-                          marketplace.connected 
-                            ? "bg-green-500 animate-pulse" 
-                            : "bg-red-500"
-                        )} 
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        {marketplace.connected ? 'Connected' : 'Not connected'}
-                      </p>
+                      {getConnectionStatus(marketplace)}
+                      {marketplace.connected && marketplace.lastSync && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <span className="text-sm text-muted-foreground">
+                                Last synced: {new Date(marketplace.lastSync).toLocaleDateString()}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Items synced: {marketplace.itemCount || 0}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -286,6 +378,7 @@ export function MarketplaceConnect() {
                     }
                   }}
                   disabled={isAuthenticating}
+                  className="min-w-[100px]"
                 >
                   {isAuthenticating && selectedMarketplace?.id === marketplace.id ? (
                     <>
