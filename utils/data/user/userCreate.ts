@@ -4,9 +4,9 @@ export async function userCreate(userId: string, email: string) {
   try {
     const user = await prisma.user.create({
       data: {
-        user_id: userId,
-        email: email,
-        created_time: new Date(),
+        email,
+        clerkId: userId,
+        role: "USER",
       },
     });
     return user;

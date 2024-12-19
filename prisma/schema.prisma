@@ -8,83 +8,183 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model user {
-  id                Int      @id @default(autoincrement())
-  created_time      DateTime @default(now())
-  email             String   @unique
-  first_name        String?
-  last_name         String?
-  gender            String?
-  profile_image_url String?
-  user_id           String   @unique
-  subscription      String?
+enum Role {
+  USER
+  ADMIN
 }
 
-model payments {
-  id               Int      @id @default(autoincrement())
-  created_time     DateTime @default(now())
-  stripe_id        String
-  email            String
-  amount           String
-  payment_time     String
-  payment_date     String
-  currency         String
-  user_id          String
-  customer_details String
-  payment_intent   String
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  TRIALING
 }
 
-model subscriptions {
-  id                        Int      @id @default(autoincrement())
-  created_time              DateTime @default(now())
-  subscription_id           String
-  stripe_user_id            String
-  status                    String
-  start_date                String
-  end_date                  String?
-  plan_id                   String
-  default_payment_method_id String?
-  email                     String
-  user_id                   String
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  DELETED
 }
 
-model subscriptions_plans {
-  id           Int      @id @default(autoincrement())
-  created_time DateTime @default(now())
-  plan_id      String
-  name         String
-  description  String
-  amount       String
-  currency     String
-  interval     String
+enum Platform {
+  POSHMARK
+  EBAY
+  MERCARI
+  FACEBOOK
+  DEPOP
+  BONANZA
 }
 
-model invoices {
-  id              Int      @id @default(autoincrement())
-  created_time    DateTime @default(now())
-  invoice_id      String
-  subscription_id String
-  amount_paid     String
-  amount_due      String?
+enum Condition {
+  NEW_WITH_TAGS
+  NEW_WITHOUT_TAGS
+  VERY_GOOD
+  GOOD
+  FAIR
+}
+
+model User {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  email         String    @unique
+  firstName     String?
+  lastName      String?
+  profileImage  String?
+  role          Role      @default(USER)
+  clerkId       String    @unique @map("clerk_id")
+  stripeId      String?   @unique @map("stripe_customer_id")
+  
+  // Subscription fields
+  subscriptionId      String?   @unique @map("stripe_subscription_id")
+  subscriptionStatus  SubscriptionStatus?
+  subscriptionEndDate DateTime?
+  
+  // Relations
+  listings           Listing[]
+  marketplaceAuths   MarketplaceAuth[]
+  payments           Payment[]
+  invoices           Invoice[]
+
+  @@map("users")
+}
+
+model Listing {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userId      String        @db.Uuid
+  title       String
+  description String?       @db.Text
+  price       Decimal       @db.Decimal(10, 2)
+  status      ListingStatus @default(DRAFT)
+  platform    Platform
+  category    String?
+  condition   Condition?
+  brand       String?
+  size        String?
+  color       String?
+  images      String[]
+  tags        String[]
+  
+  // Platform specific fields
+  platformListingId String?
+  platformUrl      String?
+  soldDate         DateTime?
+  soldPrice        Decimal?  @db.Decimal(10, 2)
+  
+  // Metadata
+  metadata Json?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([platform])
+  @@map("listings")
+}
+
+model MarketplaceAuth {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  userId            String    @db.Uuid
+  platform          Platform
+  encryptedUsername String?
+  encryptedPassword String?
+  encryptedToken    String?
+  encryptedSecret   String?
+  isActive          Boolean   @default(false)
+  lastSync          DateTime?
+  metadata          Json?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([platform])
+  @@map("marketplace_auths")
+}
+
+model Payment {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String   @db.Uuid
+  stripeId        String   @unique @map("stripe_payment_id")
+  amount          Decimal  @db.Decimal(10, 2)
   currency        String
   status          String
-  email           String
-  user_id         String?
+  paymentIntent   String?  @map("stripe_payment_intent_id")
+  paymentMethod   String?  @map("stripe_payment_method_id")
+  customerDetails Json?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("payments")
 }
 
-model MarketplaceAuths {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String
-  marketplace       String
-  encryptedUsername String
-  encryptedPassword String
-  isConnected       Boolean  @default(false)
-  lastVerified      DateTime @default(now())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+model Invoice {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String   @db.Uuid
+  stripeId        String   @unique @map("stripe_invoice_id")
+  subscriptionId  String?  @map("stripe_subscription_id")
+  amountPaid      Decimal  @db.Decimal(10, 2)
+  amountDue       Decimal  @db.Decimal(10, 2)
+  currency        String
+  status          String
+  periodStart     DateTime
+  periodEnd       DateTime
+  pdfUrl          String?
 
-  @@unique([userId, marketplace])
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
-  @@index([marketplace])
-  @@map("marketplace_auth")
+  @@map("invoices")
+}
+
+model SubscriptionPlan {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  stripeId    String   @unique @map("stripe_price_id")
+  name        String
+  description String?
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String
+  interval    String
+  features    Json?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+
+  @@map("subscription_plans")
 }

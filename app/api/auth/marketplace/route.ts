@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
 
     // Check authentication
     try {
-      const { userId } = getAuth(req)
-      console.log('User ID:', userId)
+      const { userId: clerkId } = getAuth(req)
+      console.log('Clerk User ID:', clerkId)
       
-      if (!userId) {
+      if (!clerkId) {
         console.log('Unauthorized: No user ID')
         return NextResponse.json(
           { error: 'Unauthorized' },
@@ -41,60 +41,70 @@ export async function POST(req: NextRequest) {
       }
 
       // Validate request body
-      const { marketplace, username, password } = body
+      const { marketplace, username, password } = body;
       if (!marketplace || !username || !password) {
-        console.log('Missing fields:', { marketplace: !!marketplace, username: !!username, password: !!password })
+        console.log('Missing fields:', { marketplace: !!marketplace, username: !!username, password: !!password });
         return NextResponse.json(
           { error: 'Missing required fields' },
           { status: 400 }
-        )
+        );
+      }
+
+      // Validate marketplace value
+      const validMarketplaces = ['poshmark', 'mercari', 'depop', 'ebay', 'facebook', 'bonanza'];
+      if (!validMarketplaces.includes(marketplace.toLowerCase())) {
+        console.log('Invalid marketplace:', marketplace);
+        return NextResponse.json(
+          { error: 'Invalid marketplace' },
+          { status: 400 }
+        );
       }
 
       // Attempt marketplace login
-      console.log('Attempting login for marketplace:', marketplace)
+      console.log('Attempting login for marketplace:', marketplace);
       let result;
       try {
-        switch (marketplace) {
+        switch (marketplace.toLowerCase()) {
           case 'poshmark':
             result = await loginToPoshmark({ username, password })
             if (result.success) {
               console.log('Poshmark login successful, storing credentials')
-              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+              await MarketplaceAuthService.storeCredentials(clerkId, marketplace, { username, password })
             }
             break
           case 'mercari':
             result = await loginToMercari({ username, password })
             if (result.success) {
               console.log('Mercari login successful, storing credentials')
-              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+              await MarketplaceAuthService.storeCredentials(clerkId, marketplace, { username, password })
             }
             break
           case 'depop':
             result = await loginToDepop({ username, password })
             if (result.success) {
               console.log('Depop login successful, storing credentials')
-              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+              await MarketplaceAuthService.storeCredentials(clerkId, marketplace, { username, password })
             }
             break
           case 'ebay':
             result = await loginToEbay({ username, password })
             if (result.success) {
               console.log('eBay login successful, storing credentials')
-              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+              await MarketplaceAuthService.storeCredentials(clerkId, marketplace, { username, password })
             }
             break
           case 'facebook':
             result = await loginToFacebook({ username, password })
             if (result.success) {
               console.log('Facebook login successful, storing credentials')
-              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+              await MarketplaceAuthService.storeCredentials(clerkId, marketplace, { username, password })
             }
             break
           case 'bonanza':
             result = await loginToBonanza({ username, password })
             if (result.success) {
               console.log('Bonanza login successful, storing credentials')
-              await MarketplaceAuthService.storeCredentials(userId, marketplace, { username, password })
+              await MarketplaceAuthService.storeCredentials(clerkId, marketplace, { username, password })
             }
             break
           default:
@@ -144,8 +154,8 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = getAuth(req)
-    if (!userId) {
+    const { userId: clerkId } = getAuth(req)
+    if (!clerkId) {
       console.log('GET: Unauthorized, no user ID')
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -164,8 +174,8 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    console.log('GET: Fetching credentials for:', { userId, marketplace })
-    const credentials = await MarketplaceAuthService.getCredentials(userId, marketplace)
+    console.log('GET: Fetching credentials for:', { clerkId, marketplace })
+    const credentials = await MarketplaceAuthService.getCredentials(clerkId, marketplace)
     
     console.log('GET: Returning connection status:', { 
       isConnected: credentials?.isConnected,
@@ -187,8 +197,8 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const { userId } = getAuth(req)
-    if (!userId) {
+    const { userId: clerkId } = getAuth(req)
+    if (!clerkId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -205,7 +215,7 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    await MarketplaceAuthService.removeCredentials(userId, marketplace)
+    await MarketplaceAuthService.removeCredentials(clerkId, marketplace)
 
     return NextResponse.json({
       success: true,

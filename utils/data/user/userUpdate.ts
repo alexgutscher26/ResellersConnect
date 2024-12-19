@@ -1,24 +1,27 @@
 import { prisma } from "@/lib/prisma";
+import { SubscriptionStatus } from "@prisma/client";
 
 interface UserUpdateData {
-  email?: string | null;
-  first_name?: string | null;
-  last_name?: string | null;
-  gender?: string | null;
-  profile_image_url?: string | null;
-  subscription?: string | null;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
+  stripeId?: string;
+  subscriptionId?: string;
+  subscriptionStatus?: SubscriptionStatus;
+  subscriptionEndDate?: Date;
 }
 
-export async function userUpdate(userId: string, data: UserUpdateData) {
+export async function userUpdate(userId: string, data: Partial<UserUpdateData>) {
   try {
-    // Filter out null values from the data
+    // Filter out undefined values from the data
     const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== null)
-    ) as Omit<UserUpdateData, keyof UserUpdateData> & { [K in keyof UserUpdateData]: string };
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    ) as UserUpdateData;
 
     const user = await prisma.user.update({
       where: {
-        user_id: userId,
+        clerkId: userId,
       },
       data: filteredData,
     });
