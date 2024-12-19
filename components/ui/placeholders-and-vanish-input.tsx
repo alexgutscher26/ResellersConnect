@@ -13,7 +13,7 @@ export function PlaceholdersAndVanishInput({
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   className?: string;
 }) {
-  const [currentPlaceholder, setCurrentPlaceholder] = useState("");
+  const [currentPlaceholder, setCurrentPlaceholder] = useState("Search for products...");
   const [placeholders] = useState([
     "Search for products...",
     "Find items to resell...",
@@ -21,8 +21,8 @@ export function PlaceholdersAndVanishInput({
     "Browse inventory...",
   ]);
 
-  const [value, setValue] = useState("");
-  const [animating, setAnimating] = useState(false);
+  const [value, setValue] = useState<string>("");
+  const [animating, setAnimating] = useState<boolean>(false);
 
   const intervalRef = useRef<NodeJS.Timeout>();
   const currentIndexRef = useRef(0);
@@ -175,8 +175,10 @@ export function PlaceholdersAndVanishInput({
     setAnimating(true);
     draw();
 
-    const value = inputRef.current?.value || "";
-    if (value && inputRef.current) {
+    const inputValue = inputRef.current?.value || "";
+    setValue(inputValue);
+    
+    if (inputValue && inputRef.current) {
       const maxX = newDataRef.current.reduce(
         (prev, current) => (current.x > prev ? current.x : prev),
         0

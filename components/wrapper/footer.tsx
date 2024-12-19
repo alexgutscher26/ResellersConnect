@@ -1,99 +1,149 @@
 "use client"
+
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import Link from 'next/link';
+import { Chrome, Github, Twitter, Linkedin } from 'lucide-react';
+import { toast } from 'sonner';
+
+const newsletterSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+});
+
+type NewsletterFormValues = z.infer<typeof newsletterSchema>;
+
+interface FooterLink {
+  title: string;
+  href: string;
+}
+
+const footerLinks: Record<string, FooterLink[]> = {
+  Product: [
+    { title: 'Features', href: '/features' },
+    { title: 'Pricing', href: '/pricing' },
+    { title: 'Integrations', href: '/integrations' },
+  ],
+  Company: [
+    { title: 'About', href: '/about' },
+    { title: 'Blog', href: '/blog' },
+    { title: 'Careers', href: '/careers' },
+  ],
+  Resources: [
+    { title: 'Documentation', href: '/docs' },
+    { title: 'Support', href: '/support' },
+    { title: 'Terms', href: '/terms' },
+  ],
+};
 
 export default function Footer() {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-    } = useForm();
+  const form = useForm<NewsletterFormValues>({
+    resolver: zodResolver(newsletterSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
 
+  const onSubmit = async (data: NewsletterFormValues) => {
+    try {
+      // TODO: Implement newsletter subscription
+      console.log('Newsletter subscription:', data);
+      toast.success('Thanks for subscribing!');
+      form.reset();
+    } catch (error) {
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
 
-    const onSubmit = async (data: any) => {
-
-
-    };
-    return (
-        <footer className="border-t dark:bg-black">
-            <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-                <div className="lg:grid lg:grid-cols-2">
-                    <div
-                        className="border-b   py-8 lg:order-last lg:border-b-0 lg:border-s lg:py-16 lg:ps-16"
-                    >
-                        <div className="mt-8 space-y-4 lg:mt-0">
-
-                            <div>
-                                <h3 className="text-2xl font-medium">This is a fake newsletter title</h3>
-                                <p className="mt-4 max-w-lg  ">
-                                    This is not a real newsletter email input. This is for you to build upon
-                                </p>
-                            </div>
-                            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col border rounded-xl p-4 gap-3 mt-6 w-full">
-                                <Input
-                                    {...register('email', { required: true })}
-                                    placeholder="Enter your email"
-                                    type="email"
-                                />
-                                <Button type="submit">
-                                    Sign Up
-                                </Button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div className="py-8 lg:py-16 lg:pe-16">
-
-
-                        <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
-
-                            <div>
-                                <p className="font-medium ">Socials</p>
-
-                                <ul className="mt-6 space-y-4 text-sm">
-                                    <li>
-                                        <Link href="https://twitter.com/rasmickyy" target="_blank" className="transition hover:opacity-75"> Twitter </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="https://www.youtube.com/@rasmic" target="_blank" className="  transition hover:opacity-75"> YouTube </Link>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div>
-                                <p className="font-medium ">Helpful Links</p>
-
-                                <ul className="mt-6 space-y-4 text-sm">
-                                    <li>
-                                        <Link target="_blank" href="/" rel="noopener noreferrer" className="  transition hover:opacity-75"> Docs </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/" className="  transition hover:opacity-75"> Methodology </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 border-t   pt-8">
-                            <ul className="flex flex-wrap gap-4 text-xs">
-                                <li>
-                                    <a href="/" target="_blank" className="transition hover:opacity-75">Terms & Conditions </a>
-                                </li>
-
-                                <li>
-                                    <a href="/" target="_blank" className="transition hover:opacity-75">Privacy Policy </a>
-                                </li>
-                            </ul>
-
-                            <p className="mt-8 text-xs  ">&copy; 2024. SomeCompany LLC. All rights reserved.</p>
-                        </div>
-                    </div>
+  return (
+    <footer className="border-t bg-background">
+      <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+          {/* Newsletter Section */}
+          <div className="lg:order-last lg:border-l lg:pl-8">
+            <div className="max-w-md">
+              <h3 className="text-2xl font-semibold tracking-tight">
+                Stay up to date
+              </h3>
+              <p className="mt-4 text-muted-foreground">
+                Get the latest updates about new features and platform improvements.
+              </p>
+              <form 
+                onSubmit={form.handleSubmit(onSubmit)} 
+                className="mt-6 space-y-4"
+              >
+                <div>
+                  <Input
+                    {...form.register('email')}
+                    placeholder="Enter your email"
+                    type="email"
+                    aria-label="Email for newsletter"
+                    className="w-full"
+                  />
+                  {form.formState.errors.email && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {form.formState.errors.email.message}
+                    </p>
+                  )}
                 </div>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting ? 'Subscribing...' : 'Subscribe'}
+                </Button>
+              </form>
             </div>
-        </footer>
+          </div>
 
-    )
+          {/* Links Section */}
+          <div className="mt-8 grid grid-cols-2 gap-8 lg:mt-0">
+            {Object.entries(footerLinks).map(([category, links]) => (
+              <div key={category}>
+                <h4 className="font-semibold">{category}</h4>
+                <ul className="mt-4 space-y-3">
+                  {links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {link.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="mt-8 border-t pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} ResellersConnect. All rights reserved.
+            </p>
+            <div className="flex space-x-4">
+              <Link href="https://twitter.com" className="text-muted-foreground hover:text-foreground">
+                <span className="sr-only">Twitter</span>
+                <Twitter className="h-5 w-5" />
+              </Link>
+              <Link href="https://github.com" className="text-muted-foreground hover:text-foreground">
+                <span className="sr-only">GitHub</span>
+                <Github className="h-5 w-5" />
+              </Link>
+              <Link href="https://linkedin.com" className="text-muted-foreground hover:text-foreground">
+                <span className="sr-only">LinkedIn</span>
+                <Linkedin className="h-5 w-5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
 }

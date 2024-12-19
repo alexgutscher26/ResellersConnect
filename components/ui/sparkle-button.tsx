@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useRef, useState } from "react"
+import React, { type CSSProperties, useEffect, useRef, useState } from "react"
 
 import { Button } from "../ui/button"
 

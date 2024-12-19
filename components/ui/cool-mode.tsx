@@ -1,4 +1,4 @@
-import React, { ReactNode, RefObject, useEffect, useRef } from "react";
+import React, { type ReactNode, type RefObject, useEffect, useRef } from "react";
 
 export interface BaseParticle {
   element: HTMLElement | SVGSVGElement;
@@ -56,7 +56,6 @@ const applyParticleEffect = (
 
   const defaultParticle = "circle";
   const particleType = options?.particle || defaultParticle;
-  const sizes = [15, 20, 25, 35, 45];
   const limit = 45;
 
   let particles: CoolParticle[] = [];
@@ -67,8 +66,9 @@ const applyParticleEffect = (
   const container = getContainer();
 
   function generateParticle() {
-    const size =
-      options?.size || sizes[Math.floor(Math.random() * sizes.length)];
+    const sizes = [15, 20, 25, 35, 45];
+    const defaultSize = sizes[Math.floor(Math.random() * sizes.length)];
+    const size = options?.size ?? defaultSize;
     const speedHorz = options?.speedHorz || Math.random() * 10;
     const speedUp = options?.speedUp || Math.random() * 25;
     const spinVal = Math.random() * 360;

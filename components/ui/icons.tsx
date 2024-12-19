@@ -1,4 +1,5 @@
-import { Chrome, RefreshCw, Loader2, type Icon as LucideIcon } from "lucide-react"
+import { Chrome, RefreshCw, Loader2 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 export type Icon = LucideIcon
 
