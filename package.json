@@ -15,9 +15,9 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@clerk/elements": "^0.22.4",
-    "@clerk/nextjs": "^6.9.5",
-    "@clerk/types": "^4.40.0",
+    "@clerk/elements": "^0.22.15",
+    "@clerk/nextjs": "^6.10.2",
+    "@clerk/types": "^4.44.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -75,10 +75,10 @@
     "puppeteer": "19.11.1",
     "puppeteer-core": "^23.11.0",
     "react": "latest",
-    "react-day-picker": "^8.10.1",
+    "react-day-picker": "^9.5.1",
     "react-dom": "latest",
-    "react-hook-form": "^7.54.1",
-    "react-icons": "^4.12.0",
+    "react-hook-form": "^7.54.2",
+    "react-icons": "^5.4.0",
     "recharts": "^2.15.0",
     "sharp": "^0.33.5",
     "sonner": "^1.7.1",
@@ -114,7 +114,7 @@
     "postcss": "latest",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.11",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.0.0",
     "typescript": "latest"
   },
   "lint-staged": {
